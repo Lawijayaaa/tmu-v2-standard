@@ -23,7 +23,7 @@ tempStat = True
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(13, GPIO.IN)
-GPIO.setup(22, GPIO.IN)
+GPIO.setup(17, GPIO.IN)
 
 source = {
     16: 862,

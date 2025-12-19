@@ -6,11 +6,6 @@ import mysql.connector
 import json
 import time, datetime, sys
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(13, GPIO.IN)
-GPIO.setup(22, GPIO.IN)
-GPIO.setup(17, GPIO.IN)
-GPIO.setup(27, GPIO.IN)
 adc = Adafruit_ADS1x15.ADS1115(address = 0x48, busnum = 1)
 
 valveStat = 0
@@ -74,14 +69,6 @@ def main():
     while True:
         start_time = time.time()
         if debugMsg == True: print("2D|1 Read ADC & Stat Oil Level")
-        oilLevelAlarm = 1 if adc.read_adc(1, gain = 2) > 25000 else 0
-        oilLevelTrip = 1 if adc.read_adc(0, gain = 2) > 25000 else 0
-        if (oilLevelAlarm and oilLevelTrip) or oilLevelTrip:
-            oilStat = 1
-        elif oilLevelAlarm:
-            oilStat = 2
-        elif oilLevelAlarm == 0 and oilLevelTrip == 0:
-            oilStat = 3
             
         if debugMsg == True: print("2D|2 Gas Fault logic")
         if gasEnabler:
@@ -114,16 +101,10 @@ def main():
                     updateJson("prevStatOil", oilStat)
         
         if debugMsg == True: print("2D|3 Input definition, Update DB")
-        pbStat = GPIO.input(13)
-        analogIn1 = 0 if adc.read_adc(3, gain = 2) < 0 else adc.read_adc(3, gain = 2)
-        analogIn2 = 0 if adc.read_adc(2, gain = 2) < 0 else adc.read_adc(2, gain = 2)
         
-        cursor.execute(sqlUpdateDI, [pbStat, 0])
-        cursor.execute(sqlUpdateDI, [GPIO.input(17), 1])
-        cursor.execute(sqlUpdateDI, [GPIO.input(22), 2])
-        cursor.execute(sqlUpdateDI, [GPIO.input(27), 3])
-        cursor.execute(sqlUpdateDI, [oilLevelAlarm, 4])
-        cursor.execute(sqlUpdateDI, [oilLevelTrip, 5])
+        analogIn1 = 0 if adc.read_adc(1, gain = 2) < 0 else adc.read_adc(1, gain = 2)
+        analogIn2 = 0 if adc.read_adc(0, gain = 2) < 0 else adc.read_adc(0, gain = 2)
+        
         cursor.execute(sqlUpdateDI, [analogIn1, 6])
         cursor.execute(sqlUpdateDI, [analogIn2, 7])
         cursor.execute(sqlReadStat)
